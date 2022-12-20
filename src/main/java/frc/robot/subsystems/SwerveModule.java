@@ -76,7 +76,7 @@ public class SwerveModule extends SubsystemBase {
     return _spinningEncoder.getVelocity();
   }
 
-  public double getAbsEncoderRad() {//TODO check on dutyCycleEncoder methods
+  public double getAbsEncoderRad() {
     double angle = _absEncoder.getAbsolutePosition();
     angle -= _absEncoderResetRad;
     angle = angle * 2 * Math.PI;

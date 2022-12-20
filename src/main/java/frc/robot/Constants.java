@@ -95,4 +95,7 @@ public final class Constants {
     public static final double kTurningEncoderRPM2RadPerSec = kTurningEncoderRot2Rad / 60;
     public static final double kPTurning = 0;
   }
+
+  // driveCurrentLimit = 42.1
+  // spinCurrentLimit = default
 }
