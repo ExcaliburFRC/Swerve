@@ -4,14 +4,18 @@
 
 package frc.robot;
 
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.SwerveModule;
+
+import static frc.robot.Constants.SwerveConstants.*;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -21,17 +25,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
  */
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
-  private final DutyCycleEncoder encoderA = new DutyCycleEncoder(0);
-  private final DutyCycleEncoder encoderB = new DutyCycleEncoder(1);
-//  private final CANSparkMax angle = new CANSparkMax(11, CANSparkMaxLowLevel.MotorType.kBrushless);
-  private final CANSparkMax angleB = new CANSparkMax(13, CANSparkMaxLowLevel.MotorType.kBrushless);
-  private final CANSparkMax angleC = new CANSparkMax(15, CANSparkMaxLowLevel.MotorType.kBrushless);
-  private final CANSparkMax angleD = new CANSparkMax(17, CANSparkMaxLowLevel.MotorType.kBrushless);
-  private final CANSparkMax drive = new CANSparkMax(12, CANSparkMaxLowLevel.MotorType.kBrushless);
-  private final CANSparkMax driveB = new CANSparkMax(14, CANSparkMaxLowLevel.MotorType.kBrushless);
-  private final CANSparkMax driveC = new CANSparkMax(16, CANSparkMaxLowLevel.MotorType.kBrushless);
-  private final CANSparkMax driveD = new CANSparkMax(18, CANSparkMaxLowLevel.MotorType.kBrushless);
-  private final Joystick joystick = new Joystick(0);
 
   private RobotContainer m_robotContainer;
 
@@ -44,9 +37,6 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
-    encoderA.reset();
-    encoderB.reset();
-
   }
 
   /**
@@ -63,8 +53,6 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
-    SmartDashboard.putNumber("posA", encoderA.getAbsolutePosition());
-    SmartDashboard.putNumber("posB", encoderB.getAbsolutePosition());
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
@@ -99,21 +87,11 @@ public class Robot extends TimedRobot {
       m_autonomousCommand.cancel();
     }
 
-    angleC.follow(angleB);
-    angleD.follow(angleB);
-
-    driveB.follow(drive);
-    driveC.follow(drive);
-    driveD.follow(drive);
-
   }
 
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    drive.set(joystick.getY() < 0.15 && joystick.getY() > -0.15? 0: -joystick.getY() / 1.5);
-    angleB.set(joystick.getX() / 3);
-
   }
 
   @Override

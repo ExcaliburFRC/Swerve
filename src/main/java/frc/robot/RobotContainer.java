@@ -4,11 +4,10 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.SwerveModule;
+import frc.robot.subsystems.Swerve;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -18,6 +17,8 @@ import frc.robot.subsystems.SwerveModule;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
+  private final Swerve swerve = new Swerve();
+  private final XboxController controller = new XboxController(0);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -32,7 +33,12 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-
+    swerve.setDefaultCommand(swerve.driveSwerveCommand(
+          controller::getLeftX,
+          controller::getLeftY,
+          controller::getRightX,
+          ()-> false
+    ));
   }
 
   /**
@@ -41,7 +47,6 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    // An ExampleCommand will run in autonomous
     return null;
   }
 }
