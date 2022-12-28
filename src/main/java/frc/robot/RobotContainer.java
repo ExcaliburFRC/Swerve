@@ -46,6 +46,7 @@ public class RobotContainer {
     );
 
     new Button(controller::getLeftBumperPressed).whenPressed(swerve.resetGyroCommand());
+    new Button(controller::getRightBumperPressed).whenPressed(swerve.resetModulesCommand(), false); // TODO: test
   }
 
   private double deadband(double value){
