@@ -1,17 +1,16 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.*;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
-import edu.wpi.first.wpilibj.interfaces.Gyro;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.WidgetType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
+
+import static java.lang.Math.PI;
 
 public class SwerveModule {
 
@@ -22,10 +21,12 @@ public class SwerveModule {
   private final RelativeEncoder _driveEncoder;
   private final RelativeEncoder _spinningEncoder;
   private final DutyCycleEncoder _absEncoder;
-  private final double _absEncoderResetRad;
+  private final double _absEncoderOffsetRad;
   private final int _absEncoderChannel;
 
   private final PIDController _spinningPIDController;
+
+  public Trigger isReset = new Trigger(()-> Math.abs(getAbsEncoderRad()) < Constants.SwerveConstants.kTolorance).debounce(0.1);
 
   public SwerveModule(int driveMotorId,
                       int spinningMotorId,
@@ -35,7 +36,7 @@ public class SwerveModule {
                       double offsetAngle) {
     _absEncoderChannel = absEncoderChannel;
     _absEncoder = new DutyCycleEncoder(absEncoderChannel);
-    _absEncoderResetRad = offsetAngle * 2 * Math.PI;
+    _absEncoderOffsetRad = (offsetAngle * 2 - 1) * PI;
 
     _driveMotor = new CANSparkMax(driveMotorId, CANSparkMax.MotorType.kBrushless);
     _spinningMotor = new CANSparkMax(spinningMotorId, CANSparkMax.MotorType.kBrushless);
@@ -44,7 +45,7 @@ public class SwerveModule {
     _spinningMotor.setInverted(spinningMotorReversed);
 
     _driveMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
-    _spinningMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+    _spinningMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
 
     _driveEncoder = _driveMotor.getEncoder();
     _spinningEncoder = _spinningMotor.getEncoder();
@@ -55,7 +56,7 @@ public class SwerveModule {
     _spinningEncoder.setVelocityConversionFactor(Constants.ModuleConstants.kTurningEncoderRPM2RadPerSec);
 
     _spinningPIDController = new PIDController(Constants.ModuleConstants.kPTurning, 0, 0);
-    _spinningPIDController.enableContinuousInput(-Math.PI, Math.PI);
+    _spinningPIDController.enableContinuousInput(-PI, PI);
 
     resetEncoders();
   }
@@ -69,7 +70,7 @@ public class SwerveModule {
   }
 
   public double getDriveVelocity() {
-    return _driveEncoder.getVelocity(); // * Constants.ModuleConstants.kDriveEncoderRPM2MeterPerSec;
+    return _driveEncoder.getVelocity();
   }
 
   public double getSpinningVelocity() {
@@ -78,9 +79,10 @@ public class SwerveModule {
 
   public double getAbsEncoderRad() {
     double angle = _absEncoder.getAbsolutePosition();
-    angle = angle * 2 * Math.PI;
-    angle -= _absEncoderResetRad;
-    angle = angle < 0 ? 2 * Math.PI + angle : angle;
+    angle = (angle * 2 - 1) * PI;
+    angle -= _absEncoderOffsetRad;
+    angle = angle < -PI ? 2 * PI + angle : angle;
+    angle = angle > PI ? angle - (2 * PI) : angle;
     return angle;
   }
 
@@ -90,18 +92,29 @@ public class SwerveModule {
   }
 
   public SwerveModuleState getState() {
-    return new SwerveModuleState(getDriveVelocity(), new Rotation2d(getSpinningPosition()));
+    return new SwerveModuleState(getDriveVelocity(), new Rotation2d(getAbsEncoderRad()));
   }
 
   public void setDesiredState(SwerveModuleState state) {
-//    if (Math.abs(state.speedMetersPerSecond) < 0.01) {
-//      stop();
-//      return;
-//    }
+    if (Math.abs(state.speedMetersPerSecond) < 0.01) {
+      stop();
+      return;
+    }
+
 //    state = SwerveModuleState.optimize(state, getState().angle);
-      _driveMotor.set(state.speedMetersPerSecond / Constants.SwerveConstants.kPhysicalMaxSpeedMeterPerSec);
-    _spinningMotor.set(_spinningPIDController.calculate(getSpinningPosition(), state.angle.getRadians()));
+
+    _driveMotor.set(state.speedMetersPerSecond / Constants.SwerveConstants.kPhysicalMaxSpeedMetersPerSecond);
+    _spinningMotor.set(_spinningPIDController.calculate(getAbsEncoderRad(), MathUtil.angleModulus(state.angle.getRadians())));
     SmartDashboard.putString("Swerve [" + _absEncoderChannel + "] state ", state.toString());
+  }
+
+  public void spinTo(double setpoint){
+    if (isReset.negate().get()) {
+      _spinningMotor.set(Constants.ModuleConstants.kPTurning * (getAbsEncoderRad() - setpoint));
+    }
+    else {
+      _spinningMotor.set(0);
+    }
   }
 
   public void stop() {

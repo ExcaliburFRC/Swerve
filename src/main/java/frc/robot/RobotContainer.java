@@ -4,9 +4,14 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.button.Button;
 import frc.robot.subsystems.Swerve;
 
 /**
@@ -34,11 +39,22 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
     swerve.setDefaultCommand(swerve.driveSwerveCommand(
-          controller::getLeftX,
-          controller::getLeftY,
-          controller::getRightX,
-          ()-> false
+          ()-> deadband(controller.getLeftX()),
+          ()-> deadband(controller.getLeftY()),
+          ()-> deadband(-controller.getRightX()),
+          ()-> true
     ));
+
+    new Button(controller::getLeftBumperPressed).whenPressed(swerve.resetGyroCommand());
+  }
+
+  public void manualButton(){
+    new Button(()-> true).whenPressed(new InstantCommand(swerve::resetEncoders));
+  }
+
+  private double deadband(double value){
+    double deadband = 0.25, valuee = Math.abs(value);
+    return valuee < deadband? 0: value;
   }
 
   /**
@@ -46,7 +62,21 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
-  public Command getAutonomousCommand() {
-    return null;
+//  public Command getAutonomousCommand() {
+//    return new RunCommand(
+//          ()-> {
+//            swerve.setModulesStates(
+//                  new SwerveModuleState[]{
+//                        new SwerveModuleState(0, new Rotation2d(Constants.SwerveConstants.kOffsetAngle[0])),
+//                        new SwerveModuleState(0, new Rotation2d(Constants.SwerveConstants.kOffsetAngle[1])),
+//                        new SwerveModuleState(0, new Rotation2d(Constants.SwerveConstants.kOffsetAngle[2])),
+//                        new SwerveModuleState(0, new Rotation2d(Constants.SwerveConstants.kOffsetAngle[3]))
+//                  });
+//          }, swerve);
+//  }
+
+  public Command getAutonomousCommand(){
+    return swerve.resetModulesCommand();
+//    return null;
   }
 }
