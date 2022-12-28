@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -8,8 +7,6 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 
 import java.util.function.BooleanSupplier;
@@ -17,15 +14,11 @@ import java.util.function.DoubleSupplier;
 
 import com.kauailabs.navx.frc.AHRS;
 
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import lib.RunEndCommand;
 
 import static frc.robot.Constants.SwerveConstants.*;
-import static java.lang.Math.PI;
 
 public class Swerve extends SubsystemBase {
-  private double time = 0;
-
   //create swerve modules
   private final SwerveModule[] swerveModules = {
         new SwerveModule(
@@ -59,13 +52,14 @@ public class Swerve extends SubsystemBase {
 
   private final AHRS _gyro = new AHRS(SPI.Port.kMXP);
 
-//  private final SwerveDriveOdometry _odometry = new SwerveDriveOdometry(
-//        kSwerveKinematics,
-//        getRotation2d());
-
   public Swerve() {
     resetGyro();
   }
+
+//  private final SwerveDriveOdometry _odometry = new SwerveDriveOdometry(
+//        kSwerveKinematics,
+
+//        getRotation2d());
 
 //  public Pose2d getOdomertyPose() {
 //    return _odometry.getPoseMeters();
@@ -102,14 +96,14 @@ public class Swerve extends SubsystemBase {
     builder.setSmartDashboardType("Swerve");
     builder.clearProperties();
 
-    builder.addDoubleProperty("FL angle", swerveModules[FRONT_LEFT]::getAbsEncoderRad, null);
-    builder.addDoubleProperty("FR angle", swerveModules[FRONT_RIGHT]::getAbsEncoderRad, null);
-    builder.addDoubleProperty("BL angle", swerveModules[BACK_LEFT]::getAbsEncoderRad, null);
-    builder.addDoubleProperty("BR angle", swerveModules[BACK_RIGHT]::getAbsEncoderRad, null);
+    builder.addDoubleProperty("FL angle", swerveModules[FRONT_LEFT]::getAbsEncoderResetRad, null);
+    builder.addDoubleProperty("FR angle", swerveModules[FRONT_RIGHT]::getAbsEncoderResetRad, null);
+    builder.addDoubleProperty("BL angle", swerveModules[BACK_LEFT]::getAbsEncoderResetRad, null);
+    builder.addDoubleProperty("BR angle", swerveModules[BACK_RIGHT]::getAbsEncoderResetRad, null);
   }
 
-  @Override
-  public void periodic() {
+//  @Override
+//  public void periodic() {
 //    if (Timer.getFPGATimestamp() - time > 10 && swerveModules[FRONT_LEFT].getDriveVelocity() < 0.01){
 //      swerveModules[FRONT_LEFT].resetSpinningEncoder();
 //      swerveModules[FRONT_RIGHT].resetSpinningEncoder();
@@ -118,7 +112,7 @@ public class Swerve extends SubsystemBase {
 //
 //      time = Timer.getFPGATimestamp();
 //    }
-  }
+//  }
 
   public void stopModules() {
     swerveModules[0].stop();
@@ -150,7 +144,7 @@ public class Swerve extends SubsystemBase {
                       .and(swerveModules[2].isReset)
                       .and(swerveModules[3].isReset))
           .andThen(new PrintCommand("swerve is reset"),
-                new InstantCommand(this::stopModules));
+                new InstantCommand(this::stopModules), new InstantCommand(this::resetEncoders));
   }
 
   private static double deadBandFix(double speed) {

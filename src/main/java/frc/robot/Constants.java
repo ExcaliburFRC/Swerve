@@ -51,9 +51,12 @@ public final class Constants {
     public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * Math.PI;//TODO find
     public static final double kMaxAccelerationMetersPerSecondSquared = 3;//TODO find
 
-    public static final double kTeleDriveMaxSpeedMetersPerSecond = kPhysicalMaxSpeedMetersPerSecond / 1.5;//TODO choose
-    public static final double kTeleDriveMaxAngularSpeedRadiansPerSecond = kPhysicalMaxAngularSpeedRadiansPerSecond / 1.5;//TODO choose
-    public static final double kMaxAngularAccelerationRadiansPerSecondSquared = Math.PI / 4; //TODO choose
+    // intentional limitations
+
+    public static final double kSpeedLimit = 5; // the higher the number the slower the robot goes
+    public static final double kTeleDriveMaxSpeedMetersPerSecond = kPhysicalMaxSpeedMetersPerSecond / kSpeedLimit;//TODO choose
+    public static final double kTeleDriveMaxAngularSpeedRadiansPerSecond = kPhysicalMaxAngularSpeedRadiansPerSecond / kSpeedLimit;//TODO choose
+    public static final double kMaxAngularAccelerationRadiansPerSecondSquared = Math.PI / kSpeedLimit; //TODO choose
     public static final double kTeleDriveMaxAccelerationUnitsPerSecond = 3; //TODO choose
     public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 3;//TODO choose
 
@@ -76,7 +79,7 @@ public final class Constants {
     public static final double kDriveEncoderRot2Meters = kDriveMotorGearRatio * Math.PI * kWheelDiameterMeters;
     public static final double kDriveEncoderRPM2MeterPerSec = kDriveEncoderRot2Meters / 60;
     public static final double kTurningMotorGearRatio = 1 / 21.4285714;
-    public static final double kTurningEncoderRot2Rad = kTurningMotorGearRatio * Math.PI;
+    public static final double kTurningEncoderRot2Rad = kTurningMotorGearRatio * 2 * Math.PI;
     public static final double kTurningEncoderRPM2RadPerSec = kTurningEncoderRot2Rad / 60;
     public static final double kPTurning = 0.5;
   }

@@ -22,7 +22,7 @@ import frc.robot.subsystems.Swerve;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  private final Swerve swerve = new Swerve();
+  public final Swerve swerve = new Swerve();
   private final XboxController controller = new XboxController(0);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -42,14 +42,10 @@ public class RobotContainer {
           ()-> deadband(controller.getLeftX()),
           ()-> deadband(controller.getLeftY()),
           ()-> deadband(-controller.getRightX()),
-          ()-> true
-    ));
+          ()-> true)
+    );
 
     new Button(controller::getLeftBumperPressed).whenPressed(swerve.resetGyroCommand());
-  }
-
-  public void manualButton(){
-    new Button(()-> true).whenPressed(new InstantCommand(swerve::resetEncoders));
   }
 
   private double deadband(double value){
