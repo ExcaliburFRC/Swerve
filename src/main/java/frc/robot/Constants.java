@@ -1,7 +1,5 @@
 package frc.robot;
 
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
@@ -18,15 +16,16 @@ import edu.wpi.first.math.util.Units;
  */
 public final class Constants {
   public static final class SwerveConstants {
-
-    public static final int FRONT_LEFT = 0;
-    public static final int FRONT_RIGHT = 1;
-    public static final int BACK_LEFT = 2;
-    public static final int BACK_RIGHT = 3;
+    public enum Modules {;
+      public static final int FRONT_LEFT = 0;
+      public static final int FRONT_RIGHT = 1;
+      public static final int BACK_LEFT = 2;
+      public static final int BACK_RIGHT = 3;
+    }
 
     public static final int[] kDriveMotorId = {18, 12, 16, 14};
     public static final int[] kSpinningMotorId = {17, 11, 15, 13};
-    public static final boolean[] kDriveMotorReversed = {false, false, false, false};//TODO check
+    public static final boolean[] kDriveMotorReversed = {false, false, false, false};
     public static final boolean[] kSpinningMotorReversed = {false, false, false, false};
     public static final int[] kAbsEncoderChannel = {1, 3, 0, 2};
     public static final double[] kOffsetAngle = {
@@ -36,7 +35,8 @@ public final class Constants {
           0.349
     };
 
-    public static double kTolorance = 0.1;
+    public static final double kTolerance = 0.1;
+    public static final double kDeadband = 0.25;
 
     public static final double kTrackWidthMeters = 0.5842;
     public static final double kWheelBaseMeters = 0.5842;
@@ -54,33 +54,39 @@ public final class Constants {
     // intentional limitations
 
     public static final double kSpeedLimit = 5; // the higher the number the slower the robot goes
-    public static final double kTeleDriveMaxSpeedMetersPerSecond = kPhysicalMaxSpeedMetersPerSecond / kSpeedLimit;//TODO choose
-    public static final double kTeleDriveMaxAngularSpeedRadiansPerSecond = kPhysicalMaxAngularSpeedRadiansPerSecond / kSpeedLimit;//TODO choose
-    public static final double kMaxAngularAccelerationRadiansPerSecondSquared = Math.PI / kSpeedLimit; //TODO choose
-    public static final double kTeleDriveMaxAccelerationUnitsPerSecond = 3; //TODO choose
-    public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 3;//TODO choose
+    public static final double kMaxDriveSpeed = kPhysicalMaxSpeedMetersPerSecond / kSpeedLimit; // m/s
+    public static final double kMaxDriveTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond / kSpeedLimit;// rad/s
+    public static final double kMaxTurningAcceleration = Math.PI / kSpeedLimit; // rad/s^2
 
-    // auto constants
-    public static final TrajectoryConfig kConfig = new TrajectoryConfig(
-          kTeleDriveMaxSpeedMetersPerSecond,
-          kMaxAccelerationMetersPerSecondSquared).setKinematics(kSwerveKinematics);
+    //unclear values
+    public static final double kMaxDriveAccelerationUnitsPerSecond = 3;
+    public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 3;
+
+    // autonomous constants
+    public static final TrajectoryConfig kConfig =
+            new TrajectoryConfig(
+            kMaxDriveSpeed,
+            kMaxAccelerationMetersPerSecondSquared)
+            .setKinematics(kSwerveKinematics);
+
     public static final TrapezoidProfile.Constraints kThetaControllerConstraints =
           new TrapezoidProfile.Constraints(
-                kTeleDriveMaxAngularSpeedRadiansPerSecond,
-                kMaxAngularAccelerationRadiansPerSecondSquared);
-    public static final double kPXAuto = 0;//TODO find
-    public static final double kPYAuto = 0;//TODO find
-    public static final double kThetaAuto = 0;//TODO find
+                  kMaxDriveTurningSpeed,
+                  kMaxTurningAcceleration);
+
+    public static final double kPXAuto = 0; //TODO: find
+    public static final double kPYAuto = 0; //TODO: find
+    public static final double kThetaAuto = 0; //TODO: find
   }
 
   public static final class ModuleConstants {
     public static final double kWheelDiameterMeters = Units.inchesToMeters(4);
     public static final double kDriveMotorGearRatio = 1 / 8.14;
-    public static final double kDriveEncoderRot2Meters = kDriveMotorGearRatio * Math.PI * kWheelDiameterMeters;
-    public static final double kDriveEncoderRPM2MeterPerSec = kDriveEncoderRot2Meters / 60;
+    public static final double kDriveEncoderRotationsToMeters = kDriveMotorGearRatio * Math.PI * kWheelDiameterMeters;
+    public static final double kDriveEncoderRPMToMeterPerSec = kDriveEncoderRotationsToMeters / 60;
     public static final double kTurningMotorGearRatio = 1 / 21.4285714;
-    public static final double kTurningEncoderRot2Rad = kTurningMotorGearRatio * 2 * Math.PI;
-    public static final double kTurningEncoderRPM2RadPerSec = kTurningEncoderRot2Rad / 60;
+    public static final double kTurningEncoderRotationsToRadians = kTurningMotorGearRatio * 2 * Math.PI;
+    public static final double kTurningEncoderRPMToRadiansPerSec = kTurningEncoderRotationsToRadians / 60;
     public static final double kPTurning = 0.5;
   }
 }

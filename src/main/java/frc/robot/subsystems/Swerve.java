@@ -14,9 +14,9 @@ import java.util.function.DoubleSupplier;
 
 import com.kauailabs.navx.frc.AHRS;
 
-import lib.RunEndCommand;
-
 import static frc.robot.Constants.SwerveConstants.*;
+import static edu.wpi.first.math.MathUtil.applyDeadband;
+import static frc.robot.Constants.SwerveConstants.Modules.*;
 
 public class Swerve extends SubsystemBase {
   //create swerve modules
@@ -56,20 +56,11 @@ public class Swerve extends SubsystemBase {
     resetGyro();
   }
 
-//  private final SwerveDriveOdometry _odometry = new SwerveDriveOdometry(
-//        kSwerveKinematics,
-
-//        getRotation2d());
-
-//  public Pose2d getOdomertyPose() {
-//    return _odometry.getPoseMeters();
-//  }
-
   public void resetGyro() {
     _gyro.reset();
   }
 
-  public double getDegrees() {
+  private double getDegrees() {
     return Math.IEEEremainder(_gyro.getAngle(), 360);
   }
 
@@ -77,35 +68,82 @@ public class Swerve extends SubsystemBase {
     return Rotation2d.fromDegrees(getDegrees());
   }
 
-    /*
-    @Override
-    public void periodic() {
-        _odometry.update(
-                getRotation2d(),
-                swerveModules[FRONT_LEFT].getState(),
-                swerveModules[FRONT_RIGHT].getState(),
-                swerveModules[BACK_LEFT].getState(),
-                swerveModules[BACK_RIGHT].getState());
-        SmartDashboard.putNumber("Robot heading to: ", getDegrees());
-        SmartDashboard.putString("Robot location: ", getOdomertyPose().getTranslation().toString());
-    }
-*/
-
-  @Override
-  public void initSendable(SendableBuilder builder) {
-    builder.setSmartDashboardType("Swerve");
-    builder.clearProperties();
-
-    builder.addDoubleProperty("FL angle", swerveModules[FRONT_LEFT]::getAbsEncoderResetRad, null);
-    builder.addDoubleProperty("FR angle", swerveModules[FRONT_RIGHT]::getAbsEncoderResetRad, null);
-    builder.addDoubleProperty("BL angle", swerveModules[BACK_LEFT]::getAbsEncoderResetRad, null);
-    builder.addDoubleProperty("BR angle", swerveModules[BACK_RIGHT]::getAbsEncoderResetRad, null);
+  public Command resetModulesCommand(){
+    return new FunctionalCommand(
+            () -> {},
+            ()-> {
+            swerveModules[FRONT_LEFT].spinTo(0);
+            swerveModules[FRONT_RIGHT].spinTo(0);
+            swerveModules[BACK_LEFT].spinTo(0);
+            swerveModules[BACK_RIGHT].spinTo(0);
+            },
+            (__)-> {
+                stopModules();
+                resetEncoders();
+                new PrintCommand("modules reset").schedule();
+            },
+            ()-> swerveModules[FRONT_LEFT].isReset
+                .and(swerveModules[FRONT_RIGHT].isReset)
+                .and(swerveModules[BACK_LEFT].isReset)
+                .and(swerveModules[BACK_RIGHT].isReset)
+                .get(),
+            this);
   }
 
+  public Command driveSwerveCommand(
+          DoubleSupplier xSpeedSupplier,
+          DoubleSupplier ySpeedSupplier,
+          DoubleSupplier spinningSpeedSupplier,
+          BooleanSupplier fieldOriented) {
+
+    final SlewRateLimiter
+            xLimiter = new SlewRateLimiter(kMaxDriveAccelerationUnitsPerSecond),
+            yLimiter = new SlewRateLimiter(kMaxDriveAccelerationUnitsPerSecond),
+            spinningLimiter = new SlewRateLimiter(kTeleDriveMaxAngularAccelerationUnitsPerSecond);
+
+    return new FunctionalCommand(
+            ()-> resetModulesCommand().schedule(false),
+            () -> {
+            //create the speeds for x,y and spinning and using a deadBand and Limiter to fix edge cases
+            double xSpeed = xLimiter.calculate(applyDeadband(xSpeedSupplier.getAsDouble(), kDeadband)) * kMaxDriveSpeed,
+                   ySpeed = yLimiter.calculate(applyDeadband(ySpeedSupplier.getAsDouble(), kDeadband)) * kMaxDriveSpeed,
+                   spinningSpeed = spinningLimiter.calculate(applyDeadband(spinningSpeedSupplier.getAsDouble(), kDeadband)) * kMaxDriveTurningSpeed;
+
+            // create a CassisSpeeds object and apply it the speeds
+            ChassisSpeeds chassisSpeeds = fieldOriented.getAsBoolean() ?
+                    ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, spinningSpeed, getRotation2d()) :
+                    new ChassisSpeeds(xSpeed, ySpeed, spinningSpeed);
+
+            //use the ChassisSpeedsObject to create an array of SwerveModuleStates
+            SwerveModuleState moduleStates[] = kSwerveKinematics.toSwerveModuleStates(chassisSpeeds);
+
+            //apply the array to the swerve modules of the robot
+            setModulesStates(moduleStates);
+            },
+            (__)-> {
+                stopModules();
+                resetEncoders();
+            },
+            ()-> false,
+            this);
+  }
+
+    @Override
+    public void initSendable(SendableBuilder builder) {
+        builder.setSmartDashboardType("Swerve");
+        builder.clearProperties();
+
+        builder.addDoubleProperty("FL angle", swerveModules[FRONT_LEFT]::getResetRad, null);
+        builder.addDoubleProperty("FR angle", swerveModules[FRONT_RIGHT]::getResetRad, null);
+        builder.addDoubleProperty("BL angle", swerveModules[BACK_LEFT]::getResetRad, null);
+        builder.addDoubleProperty("BR angle", swerveModules[BACK_RIGHT]::getResetRad, null);
+    }
+
+//  private double time = 0;
 //  @Override
 //  public void periodic() {
-//    if (Timer.getFPGATimestamp() - time > 10 && swerveModules[FRONT_LEFT].getDriveVelocity() < 0.01){
-//      swerveModules[FRONT_LEFT].resetSpinningEncoder();
+//    if (Timer.getFPGATimestamp() - time > 10 && swerveModules[SwerveModule.FRONT_LEFT].getDriveVelocity() < 0.01){
+//      swerveModules[SwerveModule.FRONT_LEFT].resetSpinningEncoder();
 //      swerveModules[FRONT_RIGHT].resetSpinningEncoder();
 //      swerveModules[BACK_LEFT].resetSpinningEncoder();
 //      swerveModules[BACK_RIGHT].resetSpinningEncoder();
@@ -114,82 +152,53 @@ public class Swerve extends SubsystemBase {
 //    }
 //  }
 
-  public void stopModules() {
-    swerveModules[0].stop();
-    swerveModules[1].stop();
-    swerveModules[2].stop();
-    swerveModules[3].stop();
-  }
+    private void setModulesStates(SwerveModuleState[] states) {
+        SwerveDriveKinematics.desaturateWheelSpeeds(states, kPhysicalMaxSpeedMetersPerSecond);
+        swerveModules[FRONT_LEFT].setDesiredState(states[FRONT_LEFT]);
+        swerveModules[FRONT_RIGHT].setDesiredState(states[FRONT_RIGHT]);
+        swerveModules[BACK_LEFT].setDesiredState(states[BACK_LEFT]);
+        swerveModules[BACK_RIGHT].setDesiredState(states[BACK_RIGHT]);
+    }
 
-  public void setModulesStates(SwerveModuleState[] states) {
-    SwerveDriveKinematics.desaturateWheelSpeeds(states, kPhysicalMaxSpeedMetersPerSecond);
-    swerveModules[0].setDesiredState(states[0]);
-    swerveModules[1].setDesiredState(states[1]);
-    swerveModules[2].setDesiredState(states[2]);
-    swerveModules[3].setDesiredState(states[3]);
-  }
+    public Command resetGyroCommand(){
+        return new InstantCommand(this::resetGyro);
+    }
 
-  public Command resetModulesCommand(){
-    return new RunCommand(
-          ()-> {
-            swerveModules[0].spinTo(0);
-            swerveModules[1].spinTo(0);
-            swerveModules[2].spinTo(0);
-            swerveModules[3].spinTo(0);
-          },
-          this)
-          .until(
-                swerveModules[0].isReset
-                      .and(swerveModules[1].isReset)
-                      .and(swerveModules[2].isReset)
-                      .and(swerveModules[3].isReset))
-          .andThen(new PrintCommand("swerve is reset"),
-                new InstantCommand(this::stopModules), new InstantCommand(this::resetEncoders));
-  }
+    private void resetEncoders(){
+        swerveModules[FRONT_LEFT].resetEncoders();
+        swerveModules[FRONT_RIGHT].resetEncoders();
+        swerveModules[BACK_LEFT].resetEncoders();
+        swerveModules[BACK_RIGHT].resetEncoders();
+    }
 
-  private static double deadBandFix(double speed) {
-    double joystickDeadBand = 0.2;
-    return Math.abs(speed) < joystickDeadBand ? 0 : speed;
-  }
+    private void stopModules() {
+        swerveModules[FRONT_LEFT].stop();
+        swerveModules[FRONT_RIGHT].stop();
+        swerveModules[BACK_LEFT].stop();
+        swerveModules[BACK_RIGHT].stop();
+    }
 
-  public Command driveSwerveCommand(DoubleSupplier xSpeedSupplier,
-                                    DoubleSupplier ySpeedSupplier,
-                                    DoubleSupplier spinningSpeedSupplier,
-                                    BooleanSupplier fieldOriented) {
-    final SlewRateLimiter xLimiter = new SlewRateLimiter(kTeleDriveMaxAccelerationUnitsPerSecond),
-          yLimiter = new SlewRateLimiter(kTeleDriveMaxAccelerationUnitsPerSecond),
-          spinningLimiter = new SlewRateLimiter(kTeleDriveMaxAngularAccelerationUnitsPerSecond);
+    // autonomous code
+//  private final SwerveDriveOdometry _odometry = new SwerveDriveOdometry(
+//        kSwerveKinematics,
+//
+//        getRotation2d());
+//
+//  public Pose2d getOdomertyPose() {
+//    return _odometry.getPoseMeters();
 
-    return new RunEndCommand(
-          () -> {
-            //create the speeds for x,y and spinning and using a deadBand and Limiter to fix edge cases
-            double xSpeed = xLimiter.calculate(deadBandFix(xSpeedSupplier.getAsDouble())) * kTeleDriveMaxSpeedMetersPerSecond,
-                  ySpeed = yLimiter.calculate(deadBandFix(ySpeedSupplier.getAsDouble())) * kTeleDriveMaxSpeedMetersPerSecond,
-                  spinningSpeed = spinningLimiter.calculate(deadBandFix(spinningSpeedSupplier.getAsDouble())) * kTeleDriveMaxAngularSpeedRadiansPerSecond;
-
-            // create a CassisSpeeds object and apply it the speeds
-            ChassisSpeeds chassisSpeeds = fieldOriented.getAsBoolean() ?
-                  ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, spinningSpeed, getRotation2d()) : new ChassisSpeeds(xSpeed, ySpeed, spinningSpeed);
-
-            //use the ChassisSpeedsObject to create an array of SwerveModuleStates
-            SwerveModuleState moduleStates[] = kSwerveKinematics.toSwerveModuleStates(chassisSpeeds);
-
-            //apply the array to the swerve modules of the robot
-            setModulesStates(moduleStates);
-          },
-          this::stopModules, this);
-  }
-
-  public void resetEncoders(){
-      swerveModules[0].resetEncoders();
-      swerveModules[1].resetEncoders();
-      swerveModules[2].resetEncoders();
-      swerveModules[3].resetEncoders();
-  }
-
-  public Command resetGyroCommand(){
-    return new InstantCommand(this::resetGyro);
-  }
+//  }
+//    @Override
+//    public void periodic() {
+//        _odometry.update(
+//                getRotation2d(),
+//                swerveModules[SwerveModule.FRONT_LEFT].getState(),
+//                swerveModules[FRONT_RIGHT].getState(),
+//                swerveModules[BACK_LEFT].getState(),
+//                swerveModules[BACK_RIGHT].getState());
+//        SmartDashboard.putNumber("Robot heading to: ", getDegrees());
+//        SmartDashboard.putString("Robot location: ", getOdomertyPose().getTranslation().toString());
+//    }
 
 //  public Command resetOdometryCommand(Pose2d pose) {
 //    return new InstantCommand(() -> _odometry.resetPosition(pose, getRotation2d()));
