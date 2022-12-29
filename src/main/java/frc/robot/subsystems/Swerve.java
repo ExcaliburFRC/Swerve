@@ -65,7 +65,7 @@ public class Swerve extends SubsystemBase {
   }
 
   public Rotation2d getRotation2d() {
-    return Rotation2d.fromDegrees(getDegrees());
+    return Rotation2d.fromDegrees(getDegrees() + 90);
   }
 
   public Command resetModulesCommand(){

@@ -4,15 +4,14 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.Button;
 import frc.robot.subsystems.Swerve;
+
+import static edu.wpi.first.math.MathUtil.applyDeadband;
+import static frc.robot.Constants.SwerveConstants.kDeadband;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -39,19 +38,14 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
     swerve.setDefaultCommand(swerve.driveSwerveCommand(
-          ()-> deadband(controller.getLeftX()),
-          ()-> deadband(controller.getLeftY()),
-          ()-> deadband(-controller.getRightX()),
-          ()-> true)
+          ()-> controller.getLeftX(),
+          ()-> controller.getLeftY(),
+          ()-> -controller.getRightX(),
+          ()-> controller.getRightTriggerAxis() < 0.1)
     );
 
     new Button(controller::getLeftBumperPressed).whenPressed(swerve.resetGyroCommand());
     new Button(controller::getRightBumperPressed).whenPressed(swerve.resetModulesCommand(), false); // TODO: test
-  }
-
-  private double deadband(double value){
-    double deadband = 0.25, valuee = Math.abs(value);
-    return valuee < deadband? 0: value;
   }
 
   /**

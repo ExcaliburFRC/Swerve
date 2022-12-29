@@ -12,7 +12,7 @@ import frc.robot.Constants;
 import static frc.robot.Constants.SwerveConstants.kTolerance;
 import static java.lang.Math.PI;
 
-public class SwerveModule extends Swerve {
+public class SwerveModule {
   private final CANSparkMax _driveMotor;
   private final CANSparkMax _spinningMotor;
 
@@ -97,7 +97,7 @@ public class SwerveModule extends Swerve {
     return angle;
   }
 
-  protected void resetEncoders() {
+  public void resetEncoders() {
     _driveEncoder.setPosition(0);
     _spinningEncoder.setPosition(getAbsEncoderRad());
   }
@@ -106,7 +106,7 @@ public class SwerveModule extends Swerve {
     return new SwerveModuleState(getDriveVelocity(), new Rotation2d(getAbsEncoderRad()));
   }
 
-  protected void setDesiredState(SwerveModuleState state) {
+  public void setDesiredState(SwerveModuleState state) {
     if (Math.abs(state.speedMetersPerSecond) < 0.01) {
       stop();
       return;
@@ -119,7 +119,7 @@ public class SwerveModule extends Swerve {
     SmartDashboard.putString("Swerve [" + _absEncoderChannel + "] state ", state.toString());
   }
 
-  protected void spinTo(double setpoint){
+  public void spinTo(double setpoint){
     if (Math.abs(getResetRad() - setpoint) > kTolerance) {
       _spinningMotor.set(_spinningPIDController.calculate(setpoint, getResetRad()));
     }
@@ -128,7 +128,7 @@ public class SwerveModule extends Swerve {
     }
   }
 
-  protected void stop() {
+  public void stop() {
     _driveMotor.set(0);
     _spinningMotor.set(0);
   }

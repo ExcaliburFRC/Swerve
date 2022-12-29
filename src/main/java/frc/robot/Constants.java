@@ -53,10 +53,10 @@ public final class Constants {
 
     // intentional limitations
 
-    public static final double kSpeedLimit = 5; // the higher the number the slower the robot goes
-    public static final double kMaxDriveSpeed = kPhysicalMaxSpeedMetersPerSecond / kSpeedLimit; // m/s
-    public static final double kMaxDriveTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond / kSpeedLimit;// rad/s
-    public static final double kMaxTurningAcceleration = Math.PI / kSpeedLimit; // rad/s^2
+    public static final double kSpeedPercantageLimit = 75; // %
+    public static final double kMaxDriveSpeed = kPhysicalMaxSpeedMetersPerSecond / 100 * kSpeedPercantageLimit; // m/s
+    public static final double kMaxDriveTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond / 100 * kSpeedPercantageLimit;// rad/s
+    public static final double kMaxTurningAcceleration = Math.PI / 100 * kSpeedPercantageLimit; // rad/s^2
 
     //unclear values
     public static final double kMaxDriveAccelerationUnitsPerSecond = 3;
