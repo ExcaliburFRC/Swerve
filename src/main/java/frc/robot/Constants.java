@@ -38,14 +38,14 @@ public final class Constants {
     public static final double kTolerance = 0.1;
     public static final double kDeadband = 0.25;
 
-    public static final double kTrackWidthMeters = 0.5842;
-    public static final double kWheelBaseMeters = 0.5842;
+    public static final double kTrackWidth = 0.5842; // m
+    public static final double kWheelBase = 0.5842; // m
     public static final SwerveDriveKinematics kSwerveKinematics =
           new SwerveDriveKinematics(
-                new Translation2d(kWheelBaseMeters / 2, -kTrackWidthMeters / 2),
-                new Translation2d(kWheelBaseMeters / 2, kTrackWidthMeters / 2),
-                new Translation2d(-kWheelBaseMeters / 2, -kTrackWidthMeters / 2),
-                new Translation2d(-kWheelBaseMeters / 2, kTrackWidthMeters / 2));
+                new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
+                new Translation2d(kWheelBase / 2, kTrackWidth / 2),
+                new Translation2d(-kWheelBase / 2, -kTrackWidth / 2),
+                new Translation2d(-kWheelBase / 2, kTrackWidth / 2));
 
     public static final double kPhysicalMaxSpeedMetersPerSecond = 5;//TODO find
     public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 2 * 2 * Math.PI;//TODO find
@@ -53,14 +53,14 @@ public final class Constants {
 
     // intentional limitations
 
-    public static final double kSpeedPercantageLimit = 75; // %
-    public static final double kMaxDriveSpeed = kPhysicalMaxSpeedMetersPerSecond / 100 * kSpeedPercantageLimit; // m/s
-    public static final double kMaxDriveTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond / 100 * kSpeedPercantageLimit;// rad/s
-    public static final double kMaxTurningAcceleration = Math.PI / 100 * kSpeedPercantageLimit; // rad/s^2
+//    public static double kSpeedPercantageLimit = 75; // %
+    public static double kMaxDriveSpeed = kPhysicalMaxSpeedMetersPerSecond; // m/s
+    public static double kMaxDriveTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond;// rad/s
+    public static double kMaxTurningAcceleration = Math.PI; // rad/s^2
 
     //unclear values
     public static final double kMaxDriveAccelerationUnitsPerSecond = 3;
-    public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 3;
+    public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 5;
 
     // autonomous constants
     public static final TrajectoryConfig kConfig =

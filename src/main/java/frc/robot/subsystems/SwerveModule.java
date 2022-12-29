@@ -103,7 +103,7 @@ public class SwerveModule {
   }
 
   public SwerveModuleState getState() {
-    return new SwerveModuleState(getDriveVelocity(), new Rotation2d(getAbsEncoderRad()));
+    return new SwerveModuleState(getDriveVelocity(), new Rotation2d(getSpinningPosition()));
   }
 
   public void setDesiredState(SwerveModuleState state) {
@@ -112,7 +112,7 @@ public class SwerveModule {
       return;
     }
 
-//    state = SwerveModuleState.optimize(state, getState().angle);
+    state = SwerveModuleState.optimize(state, getState().angle);
 
     _driveMotor.set(state.speedMetersPerSecond / Constants.SwerveConstants.kPhysicalMaxSpeedMetersPerSecond);
     _spinningMotor.set(_spinningPIDController.calculate(getSpinningPosition(), state.angle.getRadians()));
