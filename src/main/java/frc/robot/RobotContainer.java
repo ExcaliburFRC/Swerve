@@ -6,6 +6,9 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Button;
 import frc.robot.subsystems.Swerve;
@@ -24,6 +27,8 @@ public class RobotContainer {
   public final Swerve swerve = new Swerve();
   private final XboxController controller = new XboxController(0);
 
+  public final SendableChooser<Double> speedChooser = new SendableChooser<>();
+
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the button bindings
@@ -37,6 +42,12 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
+    speedChooser.addOption("fullSpeed", 1.0);
+    speedChooser.addOption("75%", 0.75);
+    speedChooser.addOption("50%", 0.5);
+    speedChooser.setDefaultOption("slow", 0.2);
+    SmartDashboard.putData(speedChooser);
+
     swerve.setDefaultCommand(swerve.driveSwerveCommand(
           ()-> controller.getLeftX(),
           ()-> controller.getLeftY(),

@@ -87,6 +87,10 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+    
+    kMaxDriveSpeed = kPhysicalMaxSpeedMetersPerSecond * m_robotContainer.speedChooser.getSelected();
+    kMaxDriveTurningSpeed = kPhysicalMaxAngularSpeedRadiansPerSecond * m_robotContainer.speedChooser.getSelected();
+    kMaxTurningAcceleration = Math.PI * m_robotContainer.speedChooser.getSelected();
   }
 
   /** This function is called periodically during operator control. */

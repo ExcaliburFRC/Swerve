@@ -5,8 +5,12 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 
 import java.util.function.BooleanSupplier;
@@ -130,14 +134,16 @@ public class Swerve extends SubsystemBase {
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        builder.setSmartDashboardType("Swerve");
         builder.clearProperties();
+        builder.setSmartDashboardType("Gyro");
 
         builder.addDoubleProperty("FL angle", swerveModules[FRONT_LEFT]::getResetRad, null);
         builder.addDoubleProperty("FR angle", swerveModules[FRONT_RIGHT]::getResetRad, null);
         builder.addDoubleProperty("BL angle", swerveModules[BACK_LEFT]::getResetRad, null);
         builder.addDoubleProperty("BR angle", swerveModules[BACK_RIGHT]::getResetRad, null);
     }
+
+
 
 //  private double time = 0;
 //  @Override
@@ -152,7 +158,7 @@ public class Swerve extends SubsystemBase {
 //    }
 //  }
 
-    private void setModulesStates(SwerveModuleState[] states) {
+  private void setModulesStates(SwerveModuleState[] states) {
         SwerveDriveKinematics.desaturateWheelSpeeds(states, kPhysicalMaxSpeedMetersPerSecond);
         swerveModules[FRONT_LEFT].setDesiredState(states[FRONT_LEFT]);
         swerveModules[FRONT_RIGHT].setDesiredState(states[FRONT_RIGHT]);
