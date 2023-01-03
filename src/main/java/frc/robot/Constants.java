@@ -76,7 +76,7 @@ public final class Constants {
 
     public static final double kPXAuto = 0; //TODO: find
     public static final double kPYAuto = 0; //TODO: find
-    public static final double kThetaAuto = 0; //TODO: find
+    public static final double kPThetaAuto = 0; //TODO: find
   }
 
   public static final class ModuleConstants {
