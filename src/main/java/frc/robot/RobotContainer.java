@@ -56,7 +56,7 @@ public class RobotContainer {
     );
 
     new Button(controller::getLeftBumperPressed).whenPressed(swerve.resetGyroCommand());
-    new Button(controller::getRightBumperPressed).whenPressed(swerve.resetModulesCommand(), false); // TODO: test
+    new Button(controller::getRightBumperPressed).whenPressed(swerve.resetModulesCommand(), false);
   }
 
   /**
@@ -64,18 +64,6 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
-//  public Command getAutonomousCommand() {
-//    return new RunCommand(
-//          ()-> {
-//            swerve.setModulesStates(
-//                  new SwerveModuleState[]{
-//                        new SwerveModuleState(0, new Rotation2d(Constants.SwerveConstants.kOffsetAngle[0])),
-//                        new SwerveModuleState(0, new Rotation2d(Constants.SwerveConstants.kOffsetAngle[1])),
-//                        new SwerveModuleState(0, new Rotation2d(Constants.SwerveConstants.kOffsetAngle[2])),
-//                        new SwerveModuleState(0, new Rotation2d(Constants.SwerveConstants.kOffsetAngle[3]))
-//                  });
-//          }, swerve);
-//  }
 
   public Command getAutonomousCommand(){
     return swerve.resetModulesCommand();
