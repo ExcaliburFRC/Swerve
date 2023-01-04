@@ -29,17 +29,17 @@ public final class Constants {
     public static final boolean[] kSpinningMotorReversed = {false, false, false, false};
     public static final int[] kAbsEncoderChannel = {1, 3, 0, 2};
     public static final double[] kOffsetAngle = {
-          0.809,
-          0.285,
-          0.407,
-          0.349
+          0.806,
+          0.290,
+          0.403,
+          0.348
     };
 
     public static final double kTolerance = 0.1;
     public static final double kDeadband = 0.05;
 
-    public static final double kTrackWidth = 0.5842; // m
-    public static final double kWheelBase = 0.5842; // m
+    public static final double kTrackWidth = 0.455; // m
+    public static final double kWheelBase = 0.455; // m
     public static final SwerveDriveKinematics kSwerveKinematics =
           new SwerveDriveKinematics(
                 new Translation2d(kWheelBase / 2, -kTrackWidth / 2),

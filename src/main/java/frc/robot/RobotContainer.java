@@ -4,14 +4,28 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.TrajectoryUtil;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import edu.wpi.first.wpilibj2.command.button.Button;
 import frc.robot.subsystems.Swerve;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
 
 import static edu.wpi.first.math.MathUtil.applyDeadband;
 import static frc.robot.Constants.SwerveConstants.kDeadband;
@@ -29,7 +43,9 @@ public class RobotContainer {
 
   public final SendableChooser<Double> speedChooser = new SendableChooser<>();
 
-  /** The container for the robot. Contains subsystems, OI devices, and commands. */
+  /**
+   * The container for the robot. Contains subsystems, OI devices, and commands.
+   */
   public RobotContainer() {
     // Configure the button bindings
     configureButtonBindings();
@@ -49,10 +65,10 @@ public class RobotContainer {
     SmartDashboard.putData(speedChooser);
 
     swerve.setDefaultCommand(swerve.driveSwerveCommand(
-          ()-> controller.getLeftX(),
-          ()-> controller.getLeftY(),
-          ()-> -controller.getRightX(),
-          ()-> controller.getRightTriggerAxis() < 0.1)
+          () -> controller.getLeftX(),
+          () -> controller.getLeftY(),
+          () -> -controller.getRightX(),
+          () -> controller.getRightTriggerAxis() < 0.1)
     );
 
     new Button(controller::getLeftBumperPressed).whenPressed(swerve.resetGyroCommand());
@@ -76,9 +92,27 @@ public class RobotContainer {
 //                  });
 //          }, swerve);
 //  }
+  private Trajectory getTrajectory(String path) {
+    try {
+      return TrajectoryUtil.fromPathweaverJson(Filesystem.getDeployDirectory().toPath().resolve(path));
+    } catch (IOException exception) {
+      DriverStation.reportError("path unavailable", false);
+      return TrajectoryGenerator.generateTrajectory(
+            new Pose2d(new Translation2d(0, 0),
+                  new Rotation2d(0)),
+            new ArrayList<>(),
+            new Pose2d(new Translation2d(0, 0),
+                  new Rotation2d(0)),
+            new TrajectoryConfig(0, 0));
+    }
+  }
 
-  public Command getAutonomousCommand(){
-    return swerve.resetModulesCommand();
+  public Command getAutonomousCommand() {
+//    return swerve.resetModulesCommand();
 //    return null;
+    return new SwerveControllerCommand(
+          getTrajectory("src/main/deploy/pathplanner/testPath.path"),
+
+          )
   }
 }
